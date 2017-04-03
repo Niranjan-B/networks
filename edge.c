@@ -7,6 +7,46 @@
 #include<string.h>
 #include<arpa/inet.h>
 #include<unistd.h>
+#include<stdbool.h>
+
+char queue[100][40]; // toa add to the queue, use strcpy(queue[0], 'blah');
+int front = 0;
+int rear = -1;
+int itemCount = 0;
+
+// functions for queue operations
+const char* peek() {
+	return queue[front];
+}
+bool isEmpty() {
+	return itemCount == 0;
+}
+bool isFull() {
+	return itemCount == 100;
+}
+int size() {
+	return itemCount;
+}
+void insert(char* str) {
+	if(!isFull()) {
+		if (rear == 99) {
+			rear = -1;
+		}
+		strcpy(queue[++rear], str);
+		itemCount++;
+	}
+}
+const char* removeData() {
+	char *data = queue[front++];
+
+	if (front == 100) {
+		front = 0;
+	}
+	itemCount--;
+	return data;
+}
+
+
 
 void main() {
 	int sock, clientSockDesc, sent, received;
@@ -45,7 +85,7 @@ void main() {
 
 		bzero(buffer, 2048);
 
-		printf("new client connected with ip = %s and port = %d", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
+		//printf("new client connected with ip = %s and port = %d", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
 
 		int data_len = 1;
 
