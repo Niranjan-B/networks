@@ -108,17 +108,14 @@ void main() {
 			if (data_len) {
 				buffer[data_len] = '\0';
 				insert(buffer);
+				printf("%s", buffer);
 			}
 		}
 
-
 		//sent = send(clientSockDesc, message, strlen(message), 0);
 		//printf("Sent %d bytes to client %s\n", sent, inet_ntoa(clientAddress.sin_addr));
-
 		printf("Client disconnected!!");
-		clearQueue();
 		close(clientSockDesc);
 	}
-    close(sock);
 }
 
