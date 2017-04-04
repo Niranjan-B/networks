@@ -12,7 +12,8 @@
 int main() {
 	int sock, length, n;
 	struct sockaddr_in serverAddress, clientAddress;
-	char buffer[1024];
+	char buf[1024];
+	bzero(buf, 1024);
 
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if(sock < 0) {
@@ -37,73 +38,61 @@ int main() {
 	unsigned int fromLength = sizeof(clientAddress);
 
 	while(true) {
-		n = recvfrom(sock, buffer,1024,0, (struct sockaddr *)&clientAddress, &fromLength);
+		n = recvfrom(sock, buf,1024,0, (struct sockaddr *)&clientAddress, &fromLength);
 		if(n < 0) {
 			//perror("Received from");	
 		} else {
-
+			puts("Got something from client");
 			// splitting string based on , here
+			char buffer[40] = {'a','n','d',',','0','0','1','1','1','1','1','1','1','1',',','1','1','1','1','1','1','1','1','1','1',',','2','2'};
 		 	char *token;
     	 	char *rest = buffer;
 		 	char *result;  
  
 		 	int count = 0;
-		 	int numOne = 0;
-		 	int numTwo = 0;
-		 	int indexN;
-		 	int resultOfAnd = 0;
- 
+		 	char *numOne;
+		 	char *numTwo;
+			int indexN;
+			
     		while ((token = strtok_r(rest, ",", &rest))) {
 				if (count == 1) {
-					//printf("%s\n", token);
-					numOne = atoi(token);
-					token = NULL;
+					printf("%s", token);
+					char *numOneTemp = token;
+					numOne = numOneTemp;
+					printf("%s", numOne);
 				} else if (count == 2) {
-					//printf("%s\n", token);
-					numTwo = atoi(token);
-					token = NULL;
+					char *numTwoTemp = token;
+					numTwo = numTwoTemp;
+					printf("%s", numTwo);
 				} else if (count == 3){
 					indexN = atoi(token);
-					//indexN = token;
-					printf("%s\n", token);
-					printf("%d\n", indexN);
+					printf("%d", indexN);
 				}
 				count++;     			
 			}
-			printf("%d\n", indexN);
-			bzero(buffer, 1024);
-			
+
 			char tempBuffer[41];
 			bzero(tempBuffer, 41);
 			
-			resultOfAnd = numOne & numTwo;
-			int tempResult = 0;
-
-			//char indexBuffer[5];
-			
-			// converting decimal to binary here
-			int i = 0;
-			for (i = 9; i >= 0; i--) {
-				tempResult = resultOfAnd >> i;
-				if (tempResult & 1) {
-					tempBuffer[9-i] = '1';
-				} else {
-					tempBuffer[9-i] = '0';
-				}
+			int i=0;
+			while(i < 10) {
+				tempBuffer[i] = (((*numOne++)-'0') & ((*numTwo++)-'0')) + '0';
+				printf("%c", tempBuffer[i]);
+				i++;
 			}
-			printf("%d\n", indexN);
+
+			
 			int firstDigit = indexN / 10;
 			int lastDigit = indexN % 10;
 			char c1 = '0' + firstDigit;
 			char c2 = '0' + lastDigit;
+			printf("%c", c1);
+			printf("%c", c2);
 
 			tempBuffer[10] = ',';
-			//sprintf(indexBuffer, "%d", indexN);
 			tempBuffer[11] = c1;
 			tempBuffer[12] = c2;
 			tempBuffer[13] = '\0';
-
-			//sprintf(tempBuffer, "%d", tempBuffer);
 
 			sendto(sock, tempBuffer, strlen(tempBuffer), 0, (struct sockaddr *)&clientAddress, fromLength);
 		}				
