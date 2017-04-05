@@ -17,8 +17,11 @@ int itemCount = 0;
 int sent = 0;
 int sentOr = 0;
 
+int lengthOfInputFile = 4;
+
 char resultBuffer[100];
 char *tempPointer;
+char resultArray[100][40];
 
 // functions for queue operations
 const char* peek() {
@@ -62,13 +65,75 @@ void clearQueue() {
 	itemCount = 0;
 }
 
+void sendDataToClient() {
+	int j=0;
+	printf("Here's the data client---\n");
+	
+	for(j=0; j<lengthOfInputFile; j++) {
+		printf("%s\n", resultArray[j]);
+	}
+}
+
+char *getResultInString(char tmp[]) {
+	char *resultToken;
+	char *result;
+	char *rest = tmp;
+	int count = 0;
+
+	while ((resultToken = strtok_r(rest, ",", &rest))) {
+		if (count == 0) {
+			result = resultToken;	
+		}
+		count++; 			
+	}
+	return result;
+}
+
+int insertedLength = 0;
+// this will ensure results are entered in the correct order
+void insertIntoArrayAtSpecificIndex(int index, char *resultString) {
+	insertedLength += 1;
+	strcpy(resultArray[index], resultString);
+	
+	//call function to send all results to client socket
+	if (insertedLength == 4) {
+		printf("%s\n", resultArray[0]);
+		printf("%s\n", resultArray[1]);
+		printf("%s\n", resultArray[2]);
+		printf("%s\n", resultArray[3]);
+	}
+}
+
+char *token;
+// function to segment the string to get the index
+int getIndexInString(char temp[]) {
+	int index = 0;
+	char *rest = temp;
+	int count = 0;
+
+	while ((token = strtok_r(rest, ",", &rest))) {
+		if (count == 1) {
+			index = atoi(token);
+		}
+		count++; 			
+	}
+	return index;
+}
+
+// function to add string to the queue
+void addToResultArray(char temp[]) {
+	int index = getIndexInString(temp);
+	char *slicedString = getResultInString(temp);
+	insertIntoArrayAtSpecificIndex(index, slicedString);
+	//insertIntoArrayAtSpecificIndex(getIndexInString(temp), getResultInString(temp));
+}
 
 int main() {
 
-	insert("and,0000010111,0000010100,44\0");
-	insert("or,0000000010,0000001011,33\0");
-	insert("or,0000000011,0000010001,22\0");
-	insert("and,0000001001,0000000111,11\0");
+	insert("and,0000010111,0000010100,0\0");
+	insert("or,0000000010,0000001011,1\0");
+	insert("or,0000000011,0000010001,2\0");
+	insert("and,0000001001,0000000111,3\0");
 
 	struct sockaddr_in andRemoteServer, orRemoteServer;
 	int andSock, orSock;
@@ -135,6 +200,7 @@ int main() {
 			}
 			flag = false;
 		}
+
 		// listen for response here
 		sent = recvfrom(andSock, resultBuffer, 40, 0, (struct sockaddr *)&andRemoteServer, &addrLen);
 		if (sent < 0) {
@@ -142,16 +208,21 @@ int main() {
 			exit(-1);
 		} else {
 			printf("Got an ack from and server %s\n", resultBuffer);
+			addToResultArray(resultBuffer);
+			bzero(resultBuffer, 40);
 		}
-		sentOr = recvfrom(orSock, resultBuffer, 100, 0, (struct sockaddr *)&orRemoteServer, &addrLen);
+		sentOr = recvfrom(orSock, resultBuffer, 40, 0, (struct sockaddr *)&orRemoteServer, &addrLen);
 		if (sentOr < 0) {
 			perror("Failed to receive from or server");
 			exit(-1);
 		} else {
 			printf("Got an ack from or server %s\n", resultBuffer);
+			addToResultArray(resultBuffer);
+			bzero(resultBuffer, 40);
 		}
-
 	}
+
+
 
 
 	// int sock, clientSockDesc, sent, received;

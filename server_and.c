@@ -44,7 +44,6 @@ int main() {
 			//perror("Received from");	
 		} else {
 			// splitting string based on , here
-			printf("Fuc you");
 			int j=0;
 			char buffer[40]; //= {'a','n','d',',','0','0','1','1','1','1','1','1','1','1',',','1','1','1','1','1','1','1','1','1','1',',','2','2'};
 		 	bzero(buffer, 40);
