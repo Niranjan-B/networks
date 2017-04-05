@@ -12,8 +12,8 @@
 int main() {
 	int sock, length, n;
 	struct sockaddr_in serverAddress, clientAddress;
-	char buf[1024];
-	bzero(buf, 1024);
+	char buf[40];
+	bzero(buf, 40);
 
 	sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if(sock < 0) {
@@ -38,14 +38,18 @@ int main() {
 	unsigned int fromLength = sizeof(clientAddress);
 
 	while(true) {
-		n = recvfrom(sock, buf,1024,0, (struct sockaddr *)&clientAddress, &fromLength);
+		bzero(buf, 40);
+		n = recvfrom(sock, buf, 40, 0, (struct sockaddr *)&clientAddress, &fromLength);
 		if(n < 0) {
 			//perror("Received from");	
 		} else {
-			puts("Got something from client");
 			// splitting string based on , here
-			char buffer[40] = {'a','n','d',',','0','0','1','1','1','1','1','1','1','1',',','1','1','1','1','1','1','1','1','1','1',',','2','2'};
-		 	char *token;
+			int j=0;
+			char buffer[40]; //= {'a','n','d',',','0','0','1','1','1','1','1','1','1','1',',','1','1','1','1','1','1','1','1','1','1',',','2','2'};
+		 	bzero(buffer, 40);
+			strncpy(buffer, buf, strlen(buf));
+			buffer[strlen(buf)-1] = '\0';
+			char *token;
     	 	char *rest = buffer;
 		 	char *result;  
  
@@ -56,17 +60,13 @@ int main() {
 			
     		while ((token = strtok_r(rest, ",", &rest))) {
 				if (count == 1) {
-					printf("%s", token);
 					char *numOneTemp = token;
 					numOne = numOneTemp;
-					printf("%s", numOne);
 				} else if (count == 2) {
 					char *numTwoTemp = token;
 					numTwo = numTwoTemp;
-					printf("%s", numTwo);
 				} else if (count == 3){
 					indexN = atoi(token);
-					printf("%d", indexN);
 				}
 				count++;     			
 			}
@@ -77,7 +77,6 @@ int main() {
 			int i=0;
 			while(i < 10) {
 				tempBuffer[i] = (((*numOne++)-'0') & ((*numTwo++)-'0')) + '0';
-				printf("%c", tempBuffer[i]);
 				i++;
 			}
 
@@ -86,8 +85,6 @@ int main() {
 			int lastDigit = indexN % 10;
 			char c1 = '0' + firstDigit;
 			char c2 = '0' + lastDigit;
-			printf("%c", c1);
-			printf("%c", c2);
 
 			tempBuffer[10] = ',';
 			tempBuffer[11] = c1;

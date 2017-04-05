@@ -12,7 +12,7 @@
 int main() {
 	struct sockaddr_in remoteServer, remoteClient;
 	int sock;
-	char buffer[1024], resultBuffer[1024];
+	char buffer[40], resultBuffer[40];
 	unsigned int len;
 
 	if((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -27,24 +27,25 @@ int main() {
 
 
 	while(1) {
-		bzero(buffer, 1024);
-		bzero(resultBuffer, 1024);
+		bzero(buffer, 40);
+		bzero(resultBuffer, 40);
+
 		printf("Enter message ");
-		fgets(buffer, 1024, stdin);
-		buffer[strlen(buffer)] = '\0';
-		if (sendto(sock, buffer, strlen(buffer), 0,(struct sockaddr *)&remoteServer, len)<0) {
+		fgets(buffer, 40, stdin);
+		//buffer[strlen(buffer)] = '\0';
+		
+		if (sendto(sock, buffer, strlen(buffer), 0, (struct sockaddr *)&remoteServer, len) < 0) {
 			puts("send failed");
 			return 1;
 		} else {
 			puts("Sent to server successfully");
 		}
-		int n = recvfrom(sock, resultBuffer, 1024, 0, (struct sockaddr *)&remoteServer, &len);
+		int n = recvfrom(sock, resultBuffer, 40, 0, (struct sockaddr *)&remoteServer, &len);
 		if(n < 0) {
 			perror("Failed to receive");
 			exit(-1);
 		}
 		printf("Got an ack %s\n", resultBuffer);
-		
 	}
 
 }
