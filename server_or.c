@@ -48,7 +48,7 @@ int main() {
 			char buffer[40]; //= {'a','n','d',',','0','0','1','1','1','1','1','1','1','1',',','1','1','1','1','1','1','1','1','1','1',',','2','2'};
 		 	bzero(buffer, 40);
 			strncpy(buffer, buf, strlen(buf));
-			buffer[strlen(buf)-1] = '\0';
+			buffer[strlen(buf)] = '\0';
 			char *token;
     	 	char *rest = buffer;
 		 	char *result;  

@@ -10,7 +10,7 @@
 #include <stdbool.h>
 
 int main() {
-	struct sockaddr_in remoteServer, remoteClient;
+	struct sockaddr_in remoteServer;
 	int sock;
 	char buffer[40], resultBuffer[40];
 	unsigned int len;
