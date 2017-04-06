@@ -31,6 +31,8 @@ char toSendBuffer[4000];
 int numOfAndOperations = 0;
 int numOfOrOperations = 0;
 
+bool compResultPrintFirstTime = true;
+
 // functions for queue operations
 const char* peek() {
 	return queue[front];
@@ -117,16 +119,10 @@ void insertIntoArrayAtSpecificIndex(int index, char *resultString) {
 		}
 
 		// --------------------- check this ---------------------------------
-		printf("To send buffer = %s\n", toSendBuffer);
-		printf("%s\n", resultArray[0]);
-		printf("%s\n", resultArray[1]);
-		printf("%s\n", resultArray[2]);
-		printf("%s\n", resultArray[3]);
+		printf("The edge server has successfully finished receiving all computation results from Backend-Server OR and Backend-Server And\n");
 
-		printf("Sending to client..........\n");
+		printf("The edge server has successfully finished sending all computation results to the client.\n");
 		send(clientSockDesc, toSendBuffer, strlen(toSendBuffer), 0);
-		printf("Sent buffer data successfully!!!");
-
 	}
 }
 
@@ -150,8 +146,39 @@ int getIndexInString(char temp[]) {
 void addToResultArray(char temp[]) {
 	int index = getIndexInString(temp);
 	char *slicedString = getResultInString(temp);
+	//printf("%d %s \n", index, queue[index]);
+	if (queue[index][0] == 'a') {
+		char *resultToken;
+		char *rest = queue[index];
+		int count = 0;
+
+		while ((resultToken = strtok_r(rest, ",", &rest))) {
+			if (count == 1) {
+				printf("%s and ", resultToken);
+			} else if (count == 2) {
+				printf("%s = ", resultToken);
+			}
+			count++; 			
+		}
+		printf("%s\n", slicedString);
+	
+	} else {
+		char *resultToken;
+		char *rest = queue[index];
+		int count = 0;
+
+		while ((resultToken = strtok_r(rest, ",", &rest))) {
+			if (count == 1) {
+				printf("%s or ", resultToken);
+			} else if (count == 2) {
+				printf("%s = ", resultToken);
+			}
+			count++; 			
+		}
+		printf("%s\n", slicedString);
+	}
+
 	insertIntoArrayAtSpecificIndex(index, slicedString);
-	//insertIntoArrayAtSpecificIndex(getIndexInString(temp), getResultInString(temp));
 }
 
 void insertBufferHelper(char resultBuffer[]) {
@@ -219,7 +246,6 @@ void sendBufferToServers() {
 
 	bzero(resultBuffer, 40);
 
-	printf("starting to send packets to respective servers\n");
 	bool flag = true;
 
 	// send the number of and operations first to and / or servers first
@@ -227,14 +253,13 @@ void sendBufferToServers() {
 	bzero(countBuffer, 10);
 	sprintf(countBuffer, "%d", numOfAndOperations);
 	sendto(andSock, countBuffer, strlen(countBuffer), 0, (struct sockaddr *)&andRemoteServer, addrLen);
-	printf("Sent count to remote and server\n");
+	//printf("Sent count to remote and server\n");
 	
 	bzero(countBuffer, 10);
 	sprintf(countBuffer, "%d", numOfOrOperations);
 	sendto(orSock, countBuffer, strlen(countBuffer), 0, (struct sockaddr *)&orRemoteServer, addrLen);
-	printf("Sent count to remote or server\n");
+	//printf("Sent count to remote or server\n");
 	
-
 
 	while(1) {
 		if(flag){
@@ -244,7 +269,7 @@ void sendBufferToServers() {
 			int sentOr = 0;
 
 			for (i=0; i<tempSize; i++) {
-		 		tempPointer = removeData();
+		 		tempPointer = queue[i];
 		 		if (*tempPointer == 'a') {
 		 			// send data to and server here
 					sent = sendto(andSock, tempPointer, strlen(tempPointer), 0, (struct sockaddr *)&andRemoteServer, addrLen);
@@ -252,7 +277,7 @@ void sendBufferToServers() {
 						perror("Send to and failed");
 						exit(-1);
 					} else {
-						printf("Sent to and server\n");
+						// it means the AND computation line has been succesfully sent
 					}
 					sent = 0;
 		 		} else {
@@ -262,21 +287,29 @@ void sendBufferToServers() {
 							perror("Send to or failed");
 							exit(-1);
 						} else {
-							printf("Sent to or server\n");
+							// it means the OR computation line has been succesfully sent
 						}
 					sentOr = 0; 
 		 		}
 			}
+			printf("The edge has successfully sent %d lines to Backend-Server OR\n", numOfOrOperations);
+			printf("The edge has successfully sent %d lines to Backend-Server AND.\n", numOfAndOperations);
 			flag = false;
 		}
 
 		// listen for response here
 		sent = recvfrom(andSock, resultBuffer, 40, 0, (struct sockaddr *)&andRemoteServer, &addrLen);
+		if (compResultPrintFirstTime) {
+			printf("The edge server started receiving the computation results from Backend-Server OR and Backend-Server AND using UDP over port %d\n", 24355);
+			printf("The computation results are:\n");
+			compResultPrintFirstTime = false;
+		}
+
 		if (sent < 0) {
 			perror("Failed to receive from and server");
 			exit(-1);
 		} else {
-			printf("Got an ack from and server %s\n", resultBuffer);
+			//printf("Got an ack from and server %s\n", resultBuffer);
 			addToResultArray(resultBuffer);
 			bzero(resultBuffer, 40);
 		}
@@ -285,7 +318,7 @@ void sendBufferToServers() {
 			perror("Failed to receive from or server");
 			exit(-1);
 		} else {
-			printf("Got an ack from or server %s\n", resultBuffer);
+			//printf("Got an ack from or server %s\n", resultBuffer);
 			addToResultArray(resultBuffer);
 			bzero(resultBuffer, 40);
 		}
@@ -326,6 +359,8 @@ int main() {
 		exit(-1);
 	}
 
+	printf("The edge server is up and running\n");
+
 	// keep listening for incoming requests and accept one when it comes
 	while(1) {
 		if((clientSockDesc = accept(sock, (struct sockaddr*)&clientAddress, &addrLen )) == -1) {
@@ -339,6 +374,7 @@ int main() {
 			data_len = recv(clientSockDesc, buffer, 4000, 0);
 			if (data_len) {
 				insertBufferHelper(buffer);
+				printf("The edge server has received %d lines from the client using TCP over port %d\n",size(),23355);
 				initialSizeOfBuffer = size();
 				sendBufferToServers();
 			}
