@@ -21,6 +21,8 @@ bool commaFlag = false;
 char resultBuffer[4000];
 char outputBuffer[4000];
 
+int numOfLines = 0;
+
 
 void clearBuffer() {
 	bzero(&numOneBuffer, 10);
@@ -88,6 +90,9 @@ int storePaddedNumbersIntoBuffer(int bufferIndex) {
 }
 
 void processAndDisplayOutput(char resultOfComp[]) {
+	printf("The client has successfully finished receiving all computation results from the edge server\n");
+	printf("The final computation results are:\n");
+
 	char tmpBuffer[11];
 	bzero(tmpBuffer, 11);
 	int i=0;
@@ -106,6 +111,8 @@ void processAndDisplayOutput(char resultOfComp[]) {
 }
 
 int main() {
+	printf("The client is up and running\n");
+
 	int index = 0;
 	bool flag = true;
 	int bufferIndex = 0;
@@ -119,6 +126,8 @@ int main() {
 	while((c=fgetc(fp)) != EOF) {
 		if (c == '\n' && flag) {
 			flag = false;
+
+			numOfLines += 1;
 			
 			paddZeros(numBuffer);
 			bufferIndex = storePaddedNumbersIntoBuffer(bufferIndex);
@@ -132,7 +141,6 @@ int main() {
 			index++;
 			clearBuffer();
 			bufferIndex = 0;
-			printf("\n");
 		} else {
 			if (c == ',') {
 				commaFlag = true;
@@ -151,7 +159,7 @@ int main() {
 	fclose(fp);
 
 	// ----------------------------- start transmitting the buffer here ------------------------------------------------
-	printf("sending result buffer %s\n", resultBuffer);
+	//printf("sending result buffer %s %d\n", resultBuffer, numOfLines);
 	//printf("%s\n", *resultBuffer);
 	
 	struct sockaddr_in edgeServer;
@@ -175,17 +183,15 @@ int main() {
 	}
 
 	send(sock, resultBuffer, strlen(resultBuffer), 0);
-	printf("Sent to server!!\n");
+	printf("The client has successfully finished sending %d lines to the edge server\n", numOfLines);
 	
 	bzero(outputBuffer, 4000);
 	// waiting for response from server
 	while(1) {
 		int length = 0;
-
 		length = recv(sock, outputBuffer, 4000, 0);
 		outputBuffer[length] = '\0';
 		processAndDisplayOutput(outputBuffer);
-
 	}
 
 	return 0;
