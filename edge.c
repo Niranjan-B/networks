@@ -17,11 +17,16 @@ int itemCount = 0;
 int sent = 0;
 int sentOr = 0;
 
+int clientSockDesc;
 int lengthOfInputFile = 4;
 
 char resultBuffer[100];
 char *tempPointer;
 char resultArray[100][40];
+
+int initialSizeOfBuffer = 0;
+
+char toSendBuffer[4000];
 
 // functions for queue operations
 const char* peek() {
@@ -97,11 +102,27 @@ void insertIntoArrayAtSpecificIndex(int index, char *resultString) {
 	strcpy(resultArray[index], resultString);
 	
 	//call function to send all results to client socket
-	if (insertedLength == 4) {
+	if (insertedLength == initialSizeOfBuffer) {
+		// concatenate it as one huge string and send
+		int i=0, j=0;
+		int toSendBufferIndex = 0;
+
+		for (i = 0; i < initialSizeOfBuffer; i++) {
+			for (j = 0; j < 10; j++) {
+				toSendBuffer[toSendBufferIndex++] = resultArray[i][j];
+			}
+		}
+
+		printf("To send buffer = %s\n", toSendBuffer);
 		printf("%s\n", resultArray[0]);
 		printf("%s\n", resultArray[1]);
 		printf("%s\n", resultArray[2]);
 		printf("%s\n", resultArray[3]);
+
+		printf("Sending to client..........\n");
+		send(clientSockDesc, toSendBuffer, strlen(toSendBuffer), 0);
+		printf("Sent buffer data successfully!!!");
+
 	}
 }
 
@@ -253,7 +274,7 @@ void sendBufferToServers() {
 
 int main() {
 
-	int sock, clientSockDesc, sent, received;
+	int sock, sent, received;
 	struct sockaddr_in serverAddress, clientAddress;
 	unsigned int addrLen;
 	char buffer[4000];
@@ -292,18 +313,14 @@ int main() {
 			exit(-1);
 		}
 
-		//printf("new client connected with ip = %s and port = %d\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
-
 		int data_len = 1;
 
 		while(data_len) {
 			data_len = recv(clientSockDesc, buffer, 4000, 0);
 			if (data_len) {
-				//buffer[][data_len] = '\0';
 				insertBufferHelper(buffer);
+				initialSizeOfBuffer = size();
 				sendBufferToServers();
-				//printf("%s", buffer);
-				//printf("\n");
 			}
 		}
 

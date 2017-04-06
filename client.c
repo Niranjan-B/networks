@@ -19,6 +19,7 @@ int numBufferIndex = 0;
 bool commaFlag = false;
 
 char resultBuffer[4000];
+char outputBuffer[4000];
 
 
 void clearBuffer() {
@@ -39,7 +40,6 @@ void storeSecondNum(char *num, int size) {
 		numTwoBuffer[i] = *num++;
 		i++;
 	}
-	//printf("second num = %s\n", numTwoBuffer);
 }
 
 void storeFirstNum(char *num, int size) {
@@ -51,7 +51,6 @@ void storeFirstNum(char *num, int size) {
 		numOneBuffer[i] = *num++;
 		i++;
 	}
-	//printf("first num = %s\n", numOneBuffer);
 }
 
 void paddZeros(char temp[]) {
@@ -86,6 +85,24 @@ int storePaddedNumbersIntoBuffer(int bufferIndex) {
 		buffer[bufferIndex++] = numTwoBuffer[i];
 	}
 	return bufferIndex;
+}
+
+void processAndDisplayOutput(char resultOfComp[]) {
+	char tmpBuffer[11];
+	bzero(tmpBuffer, 11);
+	int i=0;
+	int j=1;
+
+	for (i = 0; i < strlen(resultOfComp); i++) {
+        if ((j % 10) == 0) {
+            tmpBuffer[j-1] = resultOfComp[i];
+            printf("%s\n", tmpBuffer);
+            bzero(tmpBuffer, 11);
+            j = 0;
+        }
+    	tmpBuffer[j-1] = resultOfComp[i];
+    	j++;
+	}
 }
 
 int main() {
@@ -158,9 +175,18 @@ int main() {
 	}
 
 	send(sock, resultBuffer, strlen(resultBuffer), 0);
-
 	printf("Sent to server!!\n");
-	close(sock);
+	
+	bzero(outputBuffer, 4000);
+	// waiting for response from server
+	while(1) {
+		int length = 0;
+
+		length = recv(sock, outputBuffer, 4000, 0);
+		outputBuffer[length] = '\0';
+		processAndDisplayOutput(outputBuffer);
+
+	}
 
 	return 0;
 }
