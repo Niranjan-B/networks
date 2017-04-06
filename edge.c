@@ -161,100 +161,97 @@ void insertBufferHelper(char resultBuffer[]) {
 	}
 }
 
+void sendBufferToServers() {
+
+	struct sockaddr_in andRemoteServer, orRemoteServer;
+	int andSock, orSock;
+	char resultBuffer[40];
+	unsigned int addrLen;
+
+	// creating and/or server socket descriptor
+	andSock = socket(AF_INET, SOCK_DGRAM, 0);
+	if(andSock < 0) {
+		perror("Error creating and server socket");
+		exit(-1);
+	}
+	orSock = socket(AF_INET, SOCK_DGRAM, 0);
+	if(orSock < 0) {
+		perror("Error creating or server socket");
+		exit(-1);
+	}
+
+	// init and server addr
+	andRemoteServer.sin_family = AF_INET;
+	andRemoteServer.sin_port = htons(22355);
+	inet_pton(AF_INET, "127.0.0.1", &andRemoteServer.sin_addr);
+	addrLen = sizeof(struct sockaddr_in);
+	// init or server addr
+	orRemoteServer.sin_family = AF_INET;
+	orRemoteServer.sin_port = htons(21355);
+	inet_pton(AF_INET, "127.0.0.1", &orRemoteServer.sin_addr);
+
+	bzero(resultBuffer, 40);
+
+	printf("starting to send packets to respective servers\n");
+	bool flag = true;
+
+	while(1) {
+		if(flag){
+			int i=0;
+			int tempSize = size();
+			int sent = 0;
+			int sentOr = 0;
+
+			for (i=0; i<tempSize; i++) {
+		 		tempPointer = removeData();
+		 		if (*tempPointer == 'a') {
+		 			// send data to and server here
+					sent = sendto(andSock, tempPointer, strlen(tempPointer), 0, (struct sockaddr *)&andRemoteServer, addrLen);
+					if (sent < 0) {
+						perror("Send to and failed");
+						exit(-1);
+					} else {
+						printf("Sent to and server\n");
+					}
+					sent = 0;
+		 		} else {
+		 			// send data to or server here
+					sentOr = sendto(orSock, tempPointer, strlen(tempPointer), 0, (struct sockaddr *)&orRemoteServer, addrLen);
+						if (sentOr < 0) {
+							perror("Send to or failed");
+							exit(-1);
+						} else {
+							printf("Sent to or server\n");
+						}
+					sentOr = 0; 
+		 		}
+			}
+			flag = false;
+		}
+
+		// listen for response here
+		sent = recvfrom(andSock, resultBuffer, 40, 0, (struct sockaddr *)&andRemoteServer, &addrLen);
+		if (sent < 0) {
+			perror("Failed to receive from and server");
+			exit(-1);
+		} else {
+			printf("Got an ack from and server %s\n", resultBuffer);
+			addToResultArray(resultBuffer);
+			bzero(resultBuffer, 40);
+		}
+		sentOr = recvfrom(orSock, resultBuffer, 40, 0, (struct sockaddr *)&orRemoteServer, &addrLen);
+		if (sentOr < 0) {
+			perror("Failed to receive from or server");
+			exit(-1);
+		} else {
+			printf("Got an ack from or server %s\n", resultBuffer);
+			addToResultArray(resultBuffer);
+			bzero(resultBuffer, 40);
+		}
+	}
+}
+
 int main() {
-
-	// insert("and,0000010111,0000010100,0\0");
-	// insert("or,0000000010,0000001011,1\0");
-	// insert("or,0000000011,0000010001,2\0");
-	// insert("and,0000001001,0000000111,3\0");
-
-	// struct sockaddr_in andRemoteServer, orRemoteServer;
-	// int andSock, orSock;
-	// char resultBuffer[40];
-	// unsigned int addrLen;
-
-	// // creating and/or server socket descriptor
-	// andSock = socket(AF_INET, SOCK_DGRAM, 0);
-	// if(andSock < 0) {
-	// 	perror("Error creating and server socket");
-	// 	exit(-1);
-	// }
-	// orSock = socket(AF_INET, SOCK_DGRAM, 0);
-	// if(orSock < 0) {
-	// 	perror("Error creating or server socket");
-	// 	exit(-1);
-	// }
-
-	// // init and server addr
-	// andRemoteServer.sin_family = AF_INET;
-	// andRemoteServer.sin_port = htons(22355);
-	// inet_pton(AF_INET, "127.0.0.1", &andRemoteServer.sin_addr);
-	// addrLen = sizeof(struct sockaddr_in);
-	// // init or server addr
-	// orRemoteServer.sin_family = AF_INET;
-	// orRemoteServer.sin_port = htons(21355);
-	// inet_pton(AF_INET, "127.0.0.1", &orRemoteServer.sin_addr);
-
-	// bzero(resultBuffer, 40);
-
-	// printf("starting to send packets to respective servers\n");
-	// bool flag = true;
-
-	// while(1) {
-	// 	if(flag){
-	// 		int i=0;
-	// 		int tempSize = size();
-	// 		int sent = 0;
-	// 		int sentOr = 0;
-
-	// 		for (i=0; i<tempSize; i++) {
-	// 	 		tempPointer = removeData();
-	// 	 		if (*tempPointer == 'a') {
-	// 	 			// send data to and server here
-	// 				sent = sendto(andSock, tempPointer, strlen(tempPointer), 0, (struct sockaddr *)&andRemoteServer, addrLen);
-	// 				if (sent < 0) {
-	// 					perror("Send to and failed");
-	// 					exit(-1);
-	// 				} else {
-	// 					printf("Sent to and server\n");
-	// 				}
-	// 				sent = 0;
-	// 	 		} else {
-	// 	 			// send data to or server here
-	// 				sentOr = sendto(orSock, tempPointer, strlen(tempPointer), 0, (struct sockaddr *)&orRemoteServer, addrLen);
-	// 					if (sentOr < 0) {
-	// 						perror("Send to or failed");
-	// 						exit(-1);
-	// 					} else {
-	// 						printf("Sent to or server\n");
-	// 					}
-	// 				sentOr = 0; 
-	// 	 		}
-	// 		}
-	// 		flag = false;
-	// 	}
-
-	// 	// listen for response here
-	// 	sent = recvfrom(andSock, resultBuffer, 40, 0, (struct sockaddr *)&andRemoteServer, &addrLen);
-	// 	if (sent < 0) {
-	// 		perror("Failed to receive from and server");
-	// 		exit(-1);
-	// 	} else {
-	// 		printf("Got an ack from and server %s\n", resultBuffer);
-	// 		addToResultArray(resultBuffer);
-	// 		bzero(resultBuffer, 40);
-	// 	}
-	// 	sentOr = recvfrom(orSock, resultBuffer, 40, 0, (struct sockaddr *)&orRemoteServer, &addrLen);
-	// 	if (sentOr < 0) {
-	// 		perror("Failed to receive from or server");
-	// 		exit(-1);
-	// 	} else {
-	// 		printf("Got an ack from or server %s\n", resultBuffer);
-	// 		addToResultArray(resultBuffer);
-	// 		bzero(resultBuffer, 40);
-	// 	}
-	// }
-
 
 	int sock, clientSockDesc, sent, received;
 	struct sockaddr_in serverAddress, clientAddress;
@@ -304,7 +301,7 @@ int main() {
 			if (data_len) {
 				//buffer[][data_len] = '\0';
 				insertBufferHelper(buffer);
-				printf("%d\n", size());
+				sendBufferToServers();
 				//printf("%s", buffer);
 				//printf("\n");
 			}
