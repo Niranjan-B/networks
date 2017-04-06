@@ -28,6 +28,9 @@ int initialSizeOfBuffer = 0;
 
 char toSendBuffer[4000];
 
+int numOfAndOperations = 0;
+int numOfOrOperations = 0;
+
 // functions for queue operations
 const char* peek() {
 	return queue[front];
@@ -113,6 +116,7 @@ void insertIntoArrayAtSpecificIndex(int index, char *resultString) {
 			}
 		}
 
+		// --------------------- check this ---------------------------------
 		printf("To send buffer = %s\n", toSendBuffer);
 		printf("%s\n", resultArray[0]);
 		printf("%s\n", resultArray[1]);
@@ -166,7 +170,8 @@ void insertBufferHelper(char resultBuffer[]) {
             }
 			insert(tempNumBuffer);
             bzero(tempNumBuffer, 40);
-            tempNumBufferCount = 0;    
+            tempNumBufferCount = 0;
+			numOfAndOperations += 1;    
         }
         if (resultBuffer[count] == 'o') {
             int n;
@@ -177,7 +182,8 @@ void insertBufferHelper(char resultBuffer[]) {
             }
 			insert(tempNumBuffer);
             bzero(tempNumBuffer, 40);
-            tempNumBufferCount = 0;    
+            tempNumBufferCount = 0;   
+			numOfOrOperations += 1;
         }
 	}
 }
@@ -215,6 +221,18 @@ void sendBufferToServers() {
 
 	printf("starting to send packets to respective servers\n");
 	bool flag = true;
+
+	// send the number of and operations first to and / or servers first
+	char countBuffer[10];
+	bzero(countBuffer, 10);
+	sprintf(countBuffer, "%d", numOfAndOperations);
+	
+	bzero(countBuffer, 10);
+	sprintf(countBuffer, "%d", numOfOrOperations);
+	sendto(orSock, countBuffer, strlen(countBuffer), 0, (struct sockaddr *)&orRemoteServer, addrLen);
+	printf("Sent count to remote or server\n");
+	
+
 
 	while(1) {
 		if(flag){
