@@ -93,7 +93,7 @@ int main() {
 	bool flag = true;
 	int bufferIndex = 0;
 
-	bzero(resultBuffer, 100);
+	bzero(resultBuffer, 4000);
 
 	FILE *fp;
 	int c;

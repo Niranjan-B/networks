@@ -37,7 +37,7 @@ int size() {
 	return itemCount;
 }
 void insert(char* str) {
-	printf("insert = %s\n", str);
+	//printf("insert = %s\n", str);
 	if(!isFull()) {
 		if (rear == 99) {
 			rear = -1;
@@ -127,6 +127,38 @@ void addToResultArray(char temp[]) {
 	char *slicedString = getResultInString(temp);
 	insertIntoArrayAtSpecificIndex(index, slicedString);
 	//insertIntoArrayAtSpecificIndex(getIndexInString(temp), getResultInString(temp));
+}
+
+void insertBufferHelper(char resultBuffer[]) {
+	int count = 0;
+	char tempNumBuffer[40];
+	bzero(tempNumBuffer, 40);
+	int tempNumBufferCount = 0;
+	
+	for (count = 0; count < strlen(resultBuffer); count++) {
+        if (resultBuffer[count] == 'a') {
+            int m;
+            // run for 27 times
+            for (m=count; m<(count+27); m++) {
+                tempNumBuffer[tempNumBufferCount] = resultBuffer[m];
+                tempNumBufferCount++;
+            }
+			insert(tempNumBuffer);
+            bzero(tempNumBuffer, 40);
+            tempNumBufferCount = 0;    
+        }
+        if (resultBuffer[count] == 'o') {
+            int n;
+            // run for 26 times
+            for (n=count; n<(count+26); n++) {
+                tempNumBuffer[tempNumBufferCount] = resultBuffer[n];
+                tempNumBufferCount++;
+            }
+			insert(tempNumBuffer);
+            bzero(tempNumBuffer, 40);
+            tempNumBufferCount = 0;    
+        }
+	}
 }
 
 int main() {
@@ -227,8 +259,8 @@ int main() {
 	int sock, clientSockDesc, sent, received;
 	struct sockaddr_in serverAddress, clientAddress;
 	unsigned int addrLen;
-	char buffer[100][40];
-	bzero(buffer, 100);
+	char buffer[4000];
+	bzero(buffer, 4000);
 
 	// asking kernel for a socket
 	if((sock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -263,12 +295,6 @@ int main() {
 			exit(-1);
 		}
 
-		// send data to client
-		// send(clientSockDesc, buffer, strlen(buffer), 0);
-
-		// clearing 2D array
-		// clearQueue();
-
 		//printf("new client connected with ip = %s and port = %d\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
 
 		int data_len = 1;
@@ -277,7 +303,8 @@ int main() {
 			data_len = recv(clientSockDesc, buffer, 4000, 0);
 			if (data_len) {
 				//buffer[][data_len] = '\0';
-				insert(buffer);
+				insertBufferHelper(buffer);
+				printf("%d\n", size());
 				//printf("%s", buffer);
 				//printf("\n");
 			}
