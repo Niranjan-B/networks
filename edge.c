@@ -226,6 +226,8 @@ void sendBufferToServers() {
 	char countBuffer[10];
 	bzero(countBuffer, 10);
 	sprintf(countBuffer, "%d", numOfAndOperations);
+	sendto(andSock, countBuffer, strlen(countBuffer), 0, (struct sockaddr *)&andRemoteServer, addrLen);
+	printf("Sent count to remote and server\n");
 	
 	bzero(countBuffer, 10);
 	sprintf(countBuffer, "%d", numOfOrOperations);

@@ -123,7 +123,6 @@ int main() {
 				sendto(sock, tempBuffer, strlen(tempBuffer), 0, (struct sockaddr *)&clientAddress, fromLength);
 
 				// print all sent if the numOfOrOperations = sizeOfOrOperations
-	
 				if (numOfOrOperations == numOfOrOperationsFromBuffer) {
 					printf("The Server OR has successfully received %d lines from the edge server and finished all OR computations.\n",numOfOrOperationsFromBuffer);
 					printf("The Server OR has successfully finished sending all computation results to the edge server.\n");
