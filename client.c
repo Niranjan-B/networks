@@ -110,7 +110,13 @@ void processAndDisplayOutput(char resultOfComp[]) {
 	}
 }
 
-int main() {
+int main(int argc, char **argv) {
+
+	if (argc != 2) {
+		printf("only the file is required as an argument");
+		exit(-1);
+	}
+
 	printf("The client is up and running\n");
 
 	int index = 0;
@@ -121,7 +127,7 @@ int main() {
 
 	FILE *fp;
 	int c;
-	fp = fopen("job.txt", "r");
+	fp = fopen(argv[1], "r");
 
 	while((c=fgetc(fp)) != EOF) {
 		if (c == '\n' && flag) {
@@ -133,7 +139,13 @@ int main() {
 			bufferIndex = storePaddedNumbersIntoBuffer(bufferIndex);
 
 			buffer[bufferIndex++] = ',';
-			sprintf(&buffer[bufferIndex++], "%d", index);
+			// check for single or double digit, if single digit => make it into double digit
+			if (index < 10) {
+				sprintf(&buffer[bufferIndex++], "%d", 0);
+				sprintf(&buffer[bufferIndex++], "%d", index);	
+			} else {
+				sprintf(&buffer[bufferIndex++], "%d", index);
+			}
 			
 			// store lines of strings inside a buffer
 			strncat(resultBuffer, buffer, strlen(buffer)); 

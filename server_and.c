@@ -120,6 +120,8 @@ int main() {
 				tempBuffer[12] = c2;
 				tempBuffer[13] = '\0';
 
+				//puts(tempBuffer);
+
 				sendto(sock, tempBuffer, strlen(tempBuffer), 0, (struct sockaddr *)&clientAddress, fromLength);
 
 				// print all sent if the numOfAndOperations = sizeOfAndOperations

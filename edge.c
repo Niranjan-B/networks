@@ -10,7 +10,7 @@
 #include<stdbool.h>
 #include <netdb.h>
 
-char queue[100][40];
+char queue[1000][40];
 int front = 0;
 int rear = -1;
 int itemCount = 0;
@@ -18,11 +18,10 @@ int sent = 0;
 int sentOr = 0;
 
 int clientSockDesc;
-int lengthOfInputFile = 4;
 
-char resultBuffer[100];
+char resultBuffer[1000];
 char *tempPointer;
-char resultArray[100][40];
+char resultArray[1000][40];
 
 int initialSizeOfBuffer = 0;
 
@@ -74,15 +73,6 @@ void clearQueue() {
 	front = 0;
 	rear = -1;
 	itemCount = 0;
-}
-
-void sendDataToClient() {
-	int j=0;
-	printf("Here's the data client---\n");
-	
-	for(j=0; j<lengthOfInputFile; j++) {
-		printf("%s\n", resultArray[j]);
-	}
 }
 
 char *getResultInString(char tmp[]) {
@@ -191,7 +181,7 @@ void insertBufferHelper(char resultBuffer[]) {
         if (resultBuffer[count] == 'a') {
             int m;
             // run for 27 times
-            for (m=count; m<(count+27); m++) {
+            for (m=count; m<(count+28); m++) {
                 tempNumBuffer[tempNumBufferCount] = resultBuffer[m];
                 tempNumBufferCount++;
             }
@@ -203,7 +193,7 @@ void insertBufferHelper(char resultBuffer[]) {
         if (resultBuffer[count] == 'o') {
             int n;
             // run for 26 times
-            for (n=count; n<(count+26); n++) {
+            for (n=count; n<(count+27); n++) {
                 tempNumBuffer[tempNumBufferCount] = resultBuffer[n];
                 tempNumBufferCount++;
             }
