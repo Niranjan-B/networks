@@ -62,6 +62,7 @@ void paddZeros(char temp[]) {
 	char *rest = temp;
 	int count = 0;
 
+	// re-used this chunk of code from stack-overflow
 	while ((resultToken = strtok_r(rest, ",", &rest))) {
 			if (count == 0) {
 				storeFirstNum(resultToken, strlen(resultToken));

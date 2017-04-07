@@ -123,6 +123,7 @@ int getIndexInString(char temp[]) {
 	char *rest = temp;
 	int count = 0;
 
+	// re-used this chunk of code from stack-overflow
 	while ((token = strtok_r(rest, ",", &rest))) {
 		if (count == 1) {
 			index = atoi(token);
@@ -142,6 +143,7 @@ void addToResultArray(char temp[]) {
 		char *rest = queue[index];
 		int count = 0;
 
+		// re-used this chunk of code from stack-overflow
 		while ((resultToken = strtok_r(rest, ",", &rest))) {
 			if (count == 1) {
 				printf("%s and ", resultToken);

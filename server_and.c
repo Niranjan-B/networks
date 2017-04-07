@@ -83,7 +83,8 @@ int main() {
 		 		char *numTwo;
 				int indexN;
 			
-    			while ((token = strtok_r(rest, ",", &rest))) {
+    			// re-used this chunk of code from stack-overflow
+				while ((token = strtok_r(rest, ",", &rest))) {
 					if (count == 1) {
 						char *numOneTemp = token;
 						numOne = numOneTemp;
