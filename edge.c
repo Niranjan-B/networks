@@ -17,6 +17,9 @@ int itemCount = 0;
 int sent = 0;
 int sentOr = 0;
 
+int orLinesReceived = 0;
+int andLinesReceived = 0;
+
 int clientSockDesc;
 
 char resultBuffer[1000];
@@ -290,29 +293,38 @@ void sendBufferToServers() {
 		}
 
 		// listen for response here
-		sent = recvfrom(andSock, resultBuffer, 40, 0, (struct sockaddr *)&andRemoteServer, &addrLen);
-		if (compResultPrintFirstTime) {
-			printf("The edge server started receiving the computation results from Backend-Server OR and Backend-Server AND using UDP over port %d\n", 24355);
-			printf("The computation results are:\n");
-			compResultPrintFirstTime = false;
+		if (andLinesReceived != numOfAndOperations) {
+			sent = recvfrom(andSock, resultBuffer, 40, 0, (struct sockaddr *)&andRemoteServer, &addrLen);
+			if (compResultPrintFirstTime) {
+				printf("The edge server started receiving the computation results from Backend-Server OR and Backend-Server AND using UDP over port %d\n", 24355);
+				printf("The computation results are:\n");
+				compResultPrintFirstTime = false;
+			}
+
+			if (sent < 0) {
+				perror("Failed to receive from and server");
+				exit(-1);
+			} else {
+				//printf("Got an ack from and server %s\n", resultBuffer);
+				addToResultArray(resultBuffer);
+				bzero(resultBuffer, 40);
+			}
+			andLinesReceived++;
 		}
 
-		if (sent < 0) {
-			perror("Failed to receive from and server");
-			exit(-1);
-		} else {
-			//printf("Got an ack from and server %s\n", resultBuffer);
-			addToResultArray(resultBuffer);
-			bzero(resultBuffer, 40);
-		}
-		sentOr = recvfrom(orSock, resultBuffer, 40, 0, (struct sockaddr *)&orRemoteServer, &addrLen);
-		if (sentOr < 0) {
-			perror("Failed to receive from or server");
-			exit(-1);
-		} else {
-			//printf("Got an ack from or server %s\n", resultBuffer);
-			addToResultArray(resultBuffer);
-			bzero(resultBuffer, 40);
+		//printf("or operations = %d size = %d and operations = %d", numOfOrOperations,initialSizeOfBuffer,numOfAndOperations);
+
+		if (orLinesReceived != numOfOrOperations) {
+			sentOr = recvfrom(orSock, resultBuffer, 40, 0, (struct sockaddr *)&orRemoteServer, &addrLen);
+			if (sentOr < 0) {
+				perror("Failed to receive from or server");
+				exit(-1);
+			} else {
+				//printf("Got an ack from or server %s\n", resultBuffer);
+				addToResultArray(resultBuffer);
+				bzero(resultBuffer, 40);
+			}
+			orLinesReceived++;
 		}
 	}
 }
