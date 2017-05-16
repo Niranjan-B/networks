@@ -1,7 +1,3 @@
-Name -> Niranjan Bhaskar
-
-ID -> 4134875355
-
 Work Done -> created 3 server programs and 1 client program. Two of three 
 server programs namely the OR and AND servers communicate via UDP, EDGE 
 communicates via TCP to the client and UDP to the two servers. Learnt how sockets (TCP and UDP) are 
